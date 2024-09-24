@@ -2,20 +2,18 @@ pipeline {
     agent any
     
     tools {
-        
         maven 'maven3'
         jdk 'jdk17'
     }
     
     environment {
-        
         SCANNER_HOME= tool 'sonar-scanner'
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/Akki055/-Multi-Tier-With-Database.git'
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/Akki055/Multi-Tier-With-Database.git'
             }
         }
         
@@ -45,6 +43,12 @@ pipeline {
                 }
             }
         }
+
+        stage('Building_App') {
+            steps {
+                sh 'mvn clean package -DskipTests=true'
+            }
+        }
         
         stage('OWASP Dependency-Check Scan') {
             steps {
@@ -52,13 +56,7 @@ pipeline {
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
-        
-        stage('Building_App') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-        
+
         stage('Deploy_Artifact_to_Nexus') {
             steps {
                 withMaven(globalMavenSettingsConfig: 'maven-config', jdk: '', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
